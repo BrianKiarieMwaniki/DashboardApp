@@ -84,7 +84,7 @@ namespace DashboardApp.Models
 
                     var reader = command.ExecuteReader();
                     var resultTable = new List<KeyValuePair<DateTime, decimal>>();
-                    while(reader.Read())
+                    while (reader.Read())
                     {
                         resultTable.Add(new KeyValuePair<DateTime, decimal>((DateTime)reader[0], (decimal)reader[1]));
 
@@ -93,9 +93,22 @@ namespace DashboardApp.Models
                     TotalProfit = TotalRevenue * 0.2m;
                     reader.Close();
 
-                    if(numberDays <= 30)
+                    //Group by hours
+                    if (numberDays <= 1)
                     {
-                        foreach(var item in resultTable)
+                        GrossRevenueList = (from orderList in resultTable
+                                            group orderList by orderList.Key.ToString("hhtt")
+                                           into order
+                                            select new RevenueByDate
+                                            {
+                                                Date = order.Key,
+                                                TotalAmount = order.Sum(amount => amount.Value)
+                                            }).ToList();
+                    }
+                    //Group by days
+                    else if (numberDays <= 30)
+                    {
+                        foreach (var item in resultTable)
                         {
                             GrossRevenueList.Add(new RevenueByDate()
                             {
@@ -105,7 +118,7 @@ namespace DashboardApp.Models
                         }
                     }
                     //Group by weeks
-                    else if(numberDays <= 92)
+                    else if (numberDays <= 92)
                     {
                         GrossRevenueList = (from orderList in resultTable
                                             group orderList by CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(orderList.Key, CalendarWeekRule.FirstDay, DayOfWeek.Monday)
@@ -115,26 +128,26 @@ namespace DashboardApp.Models
                                                 Date = "Week " + order.Key.ToString(),
                                                 TotalAmount = order.Sum(amount => amount.Value)
                                             }).ToList();
-                                            
-                                            
+
+
                     }
 
                     //Group by Months
-                    else if(numberDays <= (365 *2))
+                    else if (numberDays <= (365 * 2))
                     {
-                        bool isYear = numberDays <= 365? true: false;
+                        bool isYear = numberDays <= 365 ? true : false;
                         GrossRevenueList = (from orderList in resultTable
                                             group orderList by orderList.Key.ToString("MMM yyyy")
                                             into order
                                             select new RevenueByDate
                                             {
-                                                Date = isYear? order.Key.Substring(0, order.Key.IndexOf(" ")): order.Key,
+                                                Date = isYear ? order.Key.Substring(0, order.Key.IndexOf(" ")) : order.Key,
                                                 TotalAmount = order.Sum(amount => amount.Value)
                                             }).ToList();
                     }
 
                     //Group by Years
-                    else 
+                    else
                     {
                         GrossRevenueList = (from orderList in resultTable
                                             group orderList by orderList.Key.ToString("yyyy")
@@ -174,7 +187,7 @@ namespace DashboardApp.Models
                     command.Parameters.Add("@toDate", SqlDbType.DateTime).Value = endDate;
 
                     reader = command.ExecuteReader();
-                    while(reader.Read())
+                    while (reader.Read())
                     {
                         TopProductsList.Add(new KeyValuePair<string, int>(reader[0].ToString(), (int)reader[1]));
                     }
@@ -186,12 +199,35 @@ namespace DashboardApp.Models
                                             where stock <= 6 and IsDiscontinued = 0";
 
                     reader = command.ExecuteReader();
-                    while(reader.Read())
+                    while (reader.Read())
                     {
                         UnderstockList.Add(new KeyValuePair<string, int>(reader[0].ToString(), (int)reader[1]));
                     }
                     reader.Close();
                 }
+            }
+        }
+
+        public bool LoadData(DateTime startDate, DateTime endDate)
+        {
+            endDate = new DateTime(endDate.Year, endDate.Month, endDate.Day, endDate.Hour, endDate.Month, 59);
+            if (startDate != this.startDate || endDate != this.endDate)
+            {
+                this.startDate = startDate;
+                this.endDate = endDate;
+                this.numberDays = (endDate - startDate).Days;
+
+                GetNumberItems();
+                GetProductAnalysis();
+                GetOrderAnalysis();
+
+                Console.WriteLine("Data not refreshed, same query: {0}", startDate.ToString(), endDate.ToString());
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Data not refreshed, same query: {0}", startDate.ToString(), endDate.ToString());
+                return false;
             }
         }
 
