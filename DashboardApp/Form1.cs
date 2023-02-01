@@ -1,4 +1,5 @@
 using DashboardApp.Models;
+using System.Collections;
 
 namespace DashboardApp
 {
@@ -33,7 +34,7 @@ namespace DashboardApp
                 lblNumProducts.Text = model.NumProducts.ToString();
 
 
-                chartGrossRevenue.DataSource = model.GrossRevenueList;
+                chartGrossRevenue.DataSource =  model.GrossRevenueList;
                 chartGrossRevenue.Series[0].XValueMember = "Date";
                 chartGrossRevenue.Series[0].YValueMembers = "Total Amount";
                 chartGrossRevenue.DataBind();

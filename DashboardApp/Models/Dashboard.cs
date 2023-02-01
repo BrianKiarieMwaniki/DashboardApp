@@ -27,7 +27,7 @@ namespace DashboardApp.Models
         public int NumProducts { get; private set; }
         public List<KeyValuePair<string, int>>? TopProductsList { get; private set; }
         public List<KeyValuePair<string, int>>? UnderstockList { get; private set; }
-        public List<RevenueByDate>? GrossRevenueList { get; private set; }
+        public List<RevenueByDate> GrossRevenueList { get; private set; }
         public int NumOrders { get; set; }
         public decimal TotalRevenue { get; set; }
         public decimal TotalProfit { get; set; }
