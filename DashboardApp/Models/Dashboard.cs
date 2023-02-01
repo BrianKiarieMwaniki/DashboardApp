@@ -88,7 +88,7 @@ namespace DashboardApp.Models
                     {
                         resultTable.Add(new KeyValuePair<DateTime, decimal>((DateTime)reader[0], (decimal)reader[1]));
 
-                        TotalRevenue += (decimal)reader[0];
+                        TotalRevenue += (decimal)reader[1];
                     }
                     TotalProfit = TotalRevenue * 0.2m;
                     reader.Close();
